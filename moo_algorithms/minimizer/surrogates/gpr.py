@@ -209,7 +209,7 @@ class GPR:
                 training_iter=self._training_iter, learning_rate=self._learning_rate, with_noise=self._with_noise
             )
             model.train_torch(train_x, torch.Tensor(output))
-            models.append(model)cd 
+            models.append(model)
         self._models = models
 
         # Check if training converged

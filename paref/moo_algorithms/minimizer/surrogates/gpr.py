@@ -22,15 +22,21 @@ class ExactGP0(gpytorch.models.ExactGP):
 
 
 class Gpr0Torch:
-    def __init__(self, training_iter=1000, learning_rate=0.1):
+    def __init__(self, training_iter=1000, learning_rate=0.1, with_noise=True):
         self._training_iter = training_iter
         self._learning_rate = learning_rate
         # with no white noise
         # self._likelihood = gpytorch.likelihoods.GaussianLikelihood(
         #    noise_constraint=gpytorch.constraints.Interval(
         #       lower_bound=0.00000001, upper_bound=0.001))
-        # with learned white noise
-        self._likelihood = gpytorch.likelihoods.GaussianLikelihood()
+        # selection between with/without noise
+        if with_noise:
+            self._likelihood = gpytorch.likelihoods.GaussianLikelihood()
+        else:
+            self._likelihood = gpytorch.likelihoods.GaussianLikelihood(
+                noise_constraint=gpytorch.constraints.Interval(
+                    lower_bound=0.00000001, upper_bound=0.001)
+            )
         self._model = None
         self.hyperparameters = None
 
@@ -184,11 +190,12 @@ class Gpr0Torch:
 class GPR:
     def __init__(self,
                  training_iter: int = 1000,
-                 learning_rate=0.05, ):
+                 learning_rate=0.05, with_noise=True):
         self._models = None
         self._training_iter = training_iter
         self._learning_rate = learning_rate
         self._means = None
+        self._with_noise = with_noise
 
     def train(self, train_x: np.ndarray, train_y: np.ndarray):
         # prepossessing
@@ -199,10 +206,10 @@ class GPR:
         models = []
         for output in (train_y.T - self._means.reshape(-1, 1)) / self._std.reshape(-1, 1):
             model = Gpr0Torch(
-                training_iter=self._training_iter, learning_rate=self._learning_rate
+                training_iter=self._training_iter, learning_rate=self._learning_rate, with_noise=self._with_noise
             )
             model.train_torch(train_x, torch.Tensor(output))
-            models.append(model)
+            models.append(model)cd 
         self._models = models
 
         # Check if training converged
@@ -227,7 +234,7 @@ class GPR:
         x = torch.Tensor([x.tolist()])
         return np.array(
             [model.predict_torch(x).stddev.numpy()[0] for model in self._models]
-        ).T
+        ).T * self._std
 
     @property
     def info(self):

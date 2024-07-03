@@ -21,14 +21,17 @@ class GprBbf(BlackboxFunction):
 
     """
 
-    def __init__(self, bbf: BlackboxFunction, training_iter=2000, learning_rate=0.05):
+    def __init__(self, bbf: BlackboxFunction, training_iter=2000, learning_rate=0.05, with_noise=True):
         self._bbf = bbf
         self._evaluations = bbf.evaluations.copy()
-        self._gpr = GPR(training_iter=training_iter, learning_rate=learning_rate)
+        self._gpr = GPR(training_iter=training_iter, learning_rate=learning_rate, with_noise=with_noise)
         self._gpr.train(train_x=bbf.x, train_y=bbf.y)
 
     def __call__(self, x: np.ndarray) -> np.ndarray:
         return self._gpr(x)
+
+    def std(self, x: np.ndarray) -> np.ndarray:
+        return self._gpr.std(x)
 
     @property
     def dimension_design_space(self) -> int:

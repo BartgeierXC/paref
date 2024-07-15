@@ -35,7 +35,7 @@ class Gpr0Torch:
         else:
             self._likelihood = gpytorch.likelihoods.GaussianLikelihood(
                 noise_constraint=gpytorch.constraints.Interval(
-                    lower_bound=0.00000001, upper_bound=0.001)
+                    lower_bound=0.00000001, upper_bound=0.0001)
             )
         self._model = None
         self.hyperparameters = None

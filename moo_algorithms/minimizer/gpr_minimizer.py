@@ -130,7 +130,8 @@ class GPRMinimizer(ParefMOO):
                  max_iter_minimizer: int = 500,
                  training_iter: int = 2000,
                  learning_rate: float = 0.05,
-                 min_distance_to_evaluated_points: float = 2e-2, ):
+                 min_distance_to_evaluated_points: float = 2e-2,
+                 with_noise: bool = True):
         """Initialize the algorithms hyperparameters
 
         Parameters
@@ -149,12 +150,15 @@ class GPRMinimizer(ParefMOO):
 
         min_distance_to_evaluated_points : float default 2e-2
             required minimum distance to already evaluated points
+
+        with_noise : bool default True
         """
         self._minimizer = DifferentialEvolution()
         self._max_iter_minimizer = max_iter_minimizer
         self._training_iter = training_iter
         self._learning_rate = learning_rate
         self._min_distance_to_evaluated_points = min_distance_to_evaluated_points
+        self._with_noise = with_noise
         self._gpr = None
 
     def apply_moo_operation(self,
@@ -177,7 +181,7 @@ class GPRMinimizer(ParefMOO):
             raise ValueError('Blackbox function must have at least 20 evaluations! Apply the latin hypercube sampling '
                              '(blackbox_function.perform_lhc(n=20)) first!')
 
-        gpr = GPR(training_iter=self._training_iter, learning_rate=self._learning_rate, )
+        gpr = GPR(training_iter=self._training_iter, learning_rate=self._learning_rate, with_noise=self._with_noise)
 
         base_blackbox_function = blackbox_function
 

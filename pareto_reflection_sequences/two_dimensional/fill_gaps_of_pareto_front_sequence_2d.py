@@ -31,6 +31,9 @@ class FillGapsOfParetoFrontSequence2D(SequenceParetoReflections):
     Pareto reflection with two points corresponding to the greatest gap in the Pareto front of the evaluations.
     """
 
+    def __init__(self):
+        last_gap_points = np.ones(1)
+
     def next(self, blackbox_function: BlackboxFunction) -> FillGap:
         """Return a :py:class:`fill gap <paref.pareto_reflections.fill_gap_2d.FillGap2D>` Pareto reflection
 
@@ -57,8 +60,20 @@ class FillGapsOfParetoFrontSequence2D(SequenceParetoReflections):
         PF_norm = np.stack(((PF[:, 0] - np.min(PF[:, 0])) / (np.max(PF[:, 0]) - np.min(PF[:, 0])),
                             (PF[:, 1] - np.min(PF[:, 1])) / (np.max(PF[:, 1]) - np.min(PF[:, 1]))), axis=-1)
 
+        gap_list = np.linalg.norm(PF_norm[:-1] - PF_norm[1:], axis=1)
+
         # Calculate points with maximal distance
-        max_norm_index = np.argmax(np.linalg.norm(PF_norm[:-1] - PF_norm[1:], axis=1))
+        max_norm_index = np.argmax(gap_list)
+
+        # Check if the gap points are the same as the last ones
+        if np.array_equal(PF[max_norm_index:max_norm_index + 2], self.last_gap_points):
+            # Print warning
+            print("Warning: The gap points are the same as the last ones. Returning the next maximum.")
+            # If true, set gap at max_norm_index to 0 and search for the next maximum
+            gap_list[max_norm_index] = 0
+            max_norm_index = np.argmax(gap_list)
+
+        self.last_gap_points = PF[max_norm_index:max_norm_index + 2]
 
         return FillGap(blackbox_function=blackbox_function,
                        gap_points=PF[max_norm_index:max_norm_index + 2],

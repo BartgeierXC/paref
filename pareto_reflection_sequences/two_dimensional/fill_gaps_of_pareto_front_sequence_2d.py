@@ -32,7 +32,7 @@ class FillGapsOfParetoFrontSequence2D(SequenceParetoReflections):
     """
 
     def __init__(self):
-        last_gap_points = np.ones(1)
+        self.last_gap_points = np.ones(1)
 
     def next(self, blackbox_function: BlackboxFunction) -> FillGap:
         """Return a :py:class:`fill gap <paref.pareto_reflections.fill_gap_2d.FillGap2D>` Pareto reflection
